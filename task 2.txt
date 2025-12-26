@@ -1,0 +1,52 @@
+# Stage 1: Module-level initialization
+values = [10, 20, 30]
+result = 0
+ 
+def process_data(data, multiplier=2):
+    # Stage 2: Function scope
+    temp = data
+    temp.append(40)  # Line A
+    
+    def inner_function():
+        # Stage 3: Nested scope
+        values = [100]  # Line B
+        nonlocal result
+        result = sum(temp) * multiplier  # Line C
+    
+    inner_function()
+    return result
+ 
+# Stage 4: Execution
+original_id = id(values)
+print(f"Before: values={values}, result={result}, id={original_id}")
+ 
+output = process_data(values)
+print(f"After: values={values}, result={result}, id={id(values)}")
+print(f"Output: {output}, Same object? {original_id == id(values)}")
+ 
+# Stage 5: Reassignment
+result = [output]
+result.append(values)  # Line D
+print(f"Final: result={result}")
+ 
+ 
+ 
+1.Explain what happens if  Line B  is changed to  temp = [100]  instead
+
+A new list[100] is created inside inner_function.This temp is local to the inner function only.It does not affect the temp variable in process_data.The outer temp still refers to[10,20,30,40]
+
+2.Explain what happens if  Line C  uses  global result  instead of  nonlocal result
+
+If Line C is changed to use instead of nonlocal result, then the assignment inside inner_function will update the module-level (global) variable result,not the variable in the enclosing function process_data.
+
+3.Explain what  Line D  demonstrates about variable types
+
+If we perform the action at Line D that rebind a name to a list and then append the other list to it, then the name that used to hold a single value now refers to a list. That list stores a reference to the other list not a copy, showing that variables can change type, lists can hold other lists, and appending creates an alias to the original object.
+
+4.How would you modify the code to prevent  values  from being modified outside the function?
+
+To prevent the values from being modified outside the function, you should make the function work on a copy of the list instead of the original list.
+
+5.Provide a detailed explanation of variable binding, mutability, and scope resolution in each case
+
+If we assign, mutate, or access names across nested functions, then Python follows this order to find or bind names: local → enclosing → global → built-in. Assigning a name without nonlocal or global creates a new local name; mutating a shared object  appending to a list affects every reference to that same object.
